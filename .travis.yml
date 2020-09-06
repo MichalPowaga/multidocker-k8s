@@ -1,0 +1,24 @@
+language: shell
+os: linux
+dist: xenial
+services:
+    - docker
+
+before_install:
+    - docker build -t michalpowaga/fibweb-tests -f ./fibweb/Dockerfile.test ./fibweb
+
+script:
+    - docker run -e CI=true michalpowaga/fibweb-tests
+
+after_success:
+    - docker build -t michalpowaga/multidocker-k8s-fibweb ./fibweb
+    - docker build -t michalpowaga/multidocker-k8s-proxy ./proxy
+    - docker build -t michalpowaga/multidocker-k8s-fibapi ./fibapi
+    - docker build -t michalpowaga/multidocker-k8s-fibservice ./fibservice
+
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+    - docker push michalpowaga/multidocker-k8s-fibweb
+    - docker push michalpowaga/multidocker-k8s-proxy
+    - docker push michalpowaga/multidocker-k8s-fibapi
+    - docker push michalpowaga/multidocker-k8s-fibservice

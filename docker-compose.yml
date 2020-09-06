@@ -1,0 +1,41 @@
+version: "3"
+services: 
+    fibweb:
+        build: 
+            context: ./fibweb
+            dockerfile: Dockerfile
+    proxy:
+        build:
+            context: ./proxy
+            dockerfile: Dockerfile
+        restart: always
+        ports: 
+            - 8080:80
+        depends_on: 
+            - fibweb
+    fibapi:
+        build:
+            context: ./fibapi
+            dockerfile: Dockerfile
+        env_file: 
+            - ./env.list
+        depends_on:
+            - postgres
+            - redis
+        stdin_open: true
+    fibservice:
+        build: 
+            context: ./fibservice
+            dockerfile: Dockerfile
+        restart: always
+        env_file: 
+            - ./env.list
+        stdin_open: true
+    postgres:
+        image: "postgres"
+        environment: 
+            - POSTGRES_DB=fibdb
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=postgres_pass123
+    redis:
+        image: "redis"
